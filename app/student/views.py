@@ -31,6 +31,5 @@ def upload():
     if form.validate_on_submit():
         form.upfiled.data.save(os.path.join(app.config['UPLOAD_FOLDER'],form.upfiled.data.filename))
         return redirect(url_for('student.index'))
-
-    return  render_template('cms/index.html',form=form)
+    return  render_template('cms/upload.html', form=form)
 
