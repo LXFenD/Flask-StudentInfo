@@ -1,0 +1,107 @@
+{% extends 'cms/common/base.html' %}
+{% block title %}
+
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename="dist/css/cms/dep_index.min.css") }}">
+{% endblock %}
+{% block content_header %}
+    <h1>
+        系部管理
+        <small>信息管理</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 后台</a></li>
+        <li class="active">系部</li>
+    </ol>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
+
+                <div class="all-info">
+                    <h4>系部数据:</h4>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>
+                                ID
+                            </th>
+                            <th>
+                                系部编号
+                            </th>
+                            <th>
+                                系部名称
+                            </th>
+                            <th>
+                                级别
+                            </th>
+                            <th>
+                                学生数
+                            </th>
+                            <th>
+                                教师数
+                            </th>
+                            <th>
+                                教师数
+                            </th>
+                            <th>
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for dep in deps %}
+                            <tr>
+                                <td>{{ dep.id }}</td>
+                                <td>{{ dep.dep_num }}</td>
+                                <td>{{ dep.dep_name }}</td>
+                                <td>{{ dep.dep_level }}</td>
+                                <td>{{ dep.dep_student_num }}</td>
+                                <td>{{ dep.dep_teacher_num }}</td>
+                                <td>{{ dep.dep_class_num }}</td>
+                                <td><a href="{{ url_for('cms.dep_index') }}?dep_id={{ dep.id }}"><span
+                                        class="btn btn-danger btn-xs">管理</span></a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="img-info-detail" style="{% if dep_detail %}
+
+                    display: block;
+                {% else %}
+                    display: none;
+                {% endif %}">
+                    {% if request %}
+                        <h4>{{ dep_detail.dep_name }}设置:</h4>
+                    {% else %}
+                        <h4></h4>
+                    {% endif %}
+                    <div class="img-info col-md-7">
+                        <img src="{{ url_for('static',filename="dist/img/xinxi.jpg") }}" alt="">
+                    </div>
+                    <div class="info-detail col-md-5">
+                        <h4><span class="fa fa-gear"></span>信息设置:</h4>
+                        <p><span>系部名称:</span><input type="text" value="{{ dep_detail.dep_name }}"></p>
+                        <p><span>系部编号:</span><input type="text" value="{{ dep_detail.dep_num }}"></p>
+                        <p><span>系部等级:</span><input type="text" value="{{ dep_detail.dep_level }}"></p>
+                        <p><span>老师人数:</span><input type="text" value="{{ dep_detail.dep_teacher_num }}"></p>
+                        <p><span>学生人数:</span><input type="text" value="{{ dep_detail.dep_student_num }}"></p>
+                        <p><span>班级数量:</span><input type="text" value="{{ dep_detail.dep_class_num }}"></p>
+                        <p><span>系部简单介绍：</span></p>
+                        <textarea name="" id="" cols="50" rows="7"></textarea>
+                        <button class="btn btn-primary pull-right">保存</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block footer %}
+    <script src="{{ url_for('static',filename="dist/js/dep_index.min.js") }}"></script>
+{% endblock %}

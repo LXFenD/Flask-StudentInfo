@@ -1,13 +1,13 @@
 from app.cms import cms
 from flask import render_template, abort, Response, flash, url_for, redirect, request, session, jsonify
-from app.models import db, User, User_Detail, UserLog
+from app.models import db, User, User_Detail, UserLog, CZ_JD_School, CZ_JD_Department
 from app.cms.froms import LoginFrom
 from flask_login import login_user, logout_user, login_required
 from app import login_manager
 from app import app
 from flask_wtf import CSRFProtect
 import os
-from config import BASEDIR, UEDITOR_CONFIG_PATH
+from config import UEDITOR_CONFIG_PATH
 import json
 import re
 
@@ -22,7 +22,19 @@ def loader_user(user_id):
 @cms.route('/')
 @login_required
 def index():
-    print(session.get('user_id'))
+    if request.args.get('teacher'):
+        cz = CZ_JD_Department.query.all()
+        labels = []
+        student_dataes = []
+        teacher_dataes = []
+        class_dataes = []
+        for c in cz:
+            labels.append(c.dep_name)
+            teacher_dataes.append(c.dep_teacher_num)
+            student_dataes.append(c.dep_student_num)
+            class_dataes.append(c.dep_class_num)
+        return jsonify({'data': {'labels': labels, 'teacher_dataes': teacher_dataes,
+                                 'student_dataes': student_dataes, 'class_dataes': class_dataes}})
     return render_template('cms/common/index.html')
 
 
@@ -122,6 +134,18 @@ def user_face_img():
     return dict(detail=detail)
 
 
+@cms.app_context_processor
+def school_detail():
+    school = CZ_JD_School.query.first()
+    return dict(school=school)
+
+
+@cms.app_context_processor
+def school_detail():
+    deps = CZ_JD_Department.query.all()
+    return dict(deps=deps)
+
+
 def _get_config():
     """
 
@@ -189,3 +213,46 @@ def up_detail():
         return jsonify({'code': 200})
     else:
         return jsonify({'code': 400})
+
+
+@cms.route('/sch_detail/', methods=['POST'])
+@login_required
+def sch_detail():
+    sch_name = request.form.get('sch_name')
+    sch_address = request.form.get('sch_address')
+    sch_email = request.form.get('sch_email')
+    sch_phone = request.form.get('sch_phone')
+    sch_time = request.form.get('sch_time')
+    sch_area = request.form.get('sch_area')
+    sch_content = request.form.get('sch_content')
+    school = CZ_JD_School.query.first()
+    dep_num = CZ_JD_Department.query.count()
+    if school:
+        school.sch_name = sch_name
+        school.sch_address = sch_address
+        school.sch_buldtime = sch_time
+        school.sch_phone = sch_phone
+        school.sch_emial = sch_email
+        school.sch_areas = int(sch_area)
+        school.sch_info = sch_content
+        school.sch_dep_num = dep_num
+    else:
+        school = CZ_JD_School(sch_name=sch_name, sch_phone=sch_phone, sch_info=sch_content, sch_areas=int(sch_area),
+                              sch_emial=sch_email, sch_dep_num=dep_num, sch_address=sch_address
+                              )
+    db.session.add(school)
+    db.session.commit()
+    return jsonify({'code': 200})
+
+
+@cms.route('/dep_index/')
+@login_required
+def dep_index():
+    dep_id = request.args.get('dep_id')
+    dep_detail  = None
+    if dep_id:
+        dep_detail = CZ_JD_Department.query.filter_by(id=int(dep_id)).first()
+
+    return render_template('cms/school/dep_index.html',dep_detail=dep_detail)
+
+

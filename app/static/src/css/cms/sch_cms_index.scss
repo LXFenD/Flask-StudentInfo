@@ -1,0 +1,39 @@
+
+
+.container{
+
+  .row{
+    margin: 0 auto;
+    .content-box{
+      background: #fff;
+      border: 1px solid darkgray;
+      padding: 10px;
+      .left-sch-detail{
+        img{
+          width: 100%;
+          height: 100%;
+        }
+
+      }
+      .right-sch-detail{
+        p{
+          .biaoji{
+            color: #0E2231;
+          }
+          input{
+            border: 1px solid #0b93d5;
+            border-radius: 5px;
+            color:#b9def0 ;
+            padding-left: 10px;
+          }
+        }
+      }
+      .sch-info{
+        textarea{
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+  }
+}

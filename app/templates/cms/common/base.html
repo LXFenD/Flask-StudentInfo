@@ -8,6 +8,7 @@
     {% endblock %}</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="{{ url_for('static',filename="dist/css/comm/base.css")}}">
     <!-- Bootstrap 3.3.7 -->
     <link rel="stylesheet"
           href="{{ url_for('static',filename="dist/adminlte/bower_components/bootstrap/dist/css/bootstrap.min.css") }}">
@@ -37,6 +38,7 @@
     <link rel="stylesheet"
           href="{{ url_for('static',filename="dist/adminlte/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css") }}">
      <script src="{{ url_for('static',filename="dist/js/jquery-3.3.1.min.js") }}"></script>
+
     {% block head %}
 
     {% endblock %}
@@ -176,6 +178,7 @@
                 </span>
                     </a>
                     <ul class="treeview-menu">
+                        <li><a href="{{ url_for('cms.dep_index') }}"><i class="fa fa-circle-o"></i> 系部管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 班级管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 专业的管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 教师管理</a></li>

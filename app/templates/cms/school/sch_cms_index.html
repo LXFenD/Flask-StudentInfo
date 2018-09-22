@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block head %}
-
-
+    <link rel="stylesheet" href="https://cdn.bootcss.com/limonte-sweetalert2/7.21.1/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ url_for('static',filename="dist/css/cms/sch_cms_index.min.css") }}">
 {% endblock %}
 
 {% block content_header %}
@@ -20,5 +20,68 @@
             </ol>
 {% endblock %}
 {% block content %}
+        <div class="container">
+            <div class="row">
+                <div class="content-box col-md-10">
+                    <div class="left-sch-detail col-md-6">
+                        <img src="{{ url_for('static',filename="dist/img/chjd.jpg") }}" alt="">
+                    </div>
+                    <div class="right-sch-detail col-md-6">
+                        <p><span class="biaoji">学院名称：</span><input type="text" name="sch-name" id="sch-name" value="{{ school.sch_name }}"></p>
+                        <p><span class="biaoji">学院地址：</span><input type="text" name="sch-address" id="sch-address" value="{{ school.sch_address }}"></p>
+                        <p><span class="biaoji">学院电话：</span><input type="text" name="sch-phone" id="sch-phone" value="{{ school.sch_phone }}"></p>
+                        <p><span class="biaoji">学院邮件：</span><input type="email" name="sch-email" id="sch-email" value="{{ school.sch_emial }}"></p>
+                        <p><span class="biaoji">建立时间：</span><input type="text" name="sch-time" id="sch-time" value="{{ school.sch_buldtime }}"></p>
+                        <p><span class="biaoji">学院面积：</span><input type="text" name="sch-area" id="sch-area" value="{{ school.sch_areas }}"></p>
+                        <p><span class="biaoji">学院院系：</span>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            ID
+                                        </th>
+                                        <th>
+                                            系部编号
+                                        </th>
+                                        <th>
+                                            系部名称
+                                        </th>
+                                         <th>
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for dep in deps %}
+                                    <tr>
+                                       <td>{{ dep.id }}</td>
+                                       <td>{{ dep.dep_num }}</td>
+                                       <td>{{ dep.dep_name }}</td>
+                                        <td><a href="{{ url_for('cms.dep_index') }}?dep_id={{ dep.id }}"><span class="btn btn-danger btn-xs">管理</span></a></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </p>
 
+                    </div>
+                    <div class="sch-info col-xs-12 col-md-12">
+                        <h3>学院简介：</h3>
+                        <script id="container" name="content" type="text/plain">{{ school.sch_info|safe }}</script>
+                        <button class="btn btn-primary pull-right btn-save">修改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block footer %}
+    <script src="https://cdn.bootcss.com/limonte-sweetalert2/7.21.1/sweetalert2.min.js">
+
+    </script>
+    <script src="{{ url_for('static',filename="dist/ueditor/ueditor.config.js") }}"></script>
+    <script src="{{ url_for('static',filename="dist/ueditor/ueditor.all.js") }}"></script>
+    <script src="{{ url_for('static',filename="dist/js/sch_cms_index.min.js") }}">
+
+    </script>
 {% endblock %}
