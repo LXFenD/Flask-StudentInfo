@@ -1,0 +1,62 @@
+{% extends 'cms/common/base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %}
+
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static',filename="dist/css/cms/myslef.min.css") }}">
+
+{% endblock %}
+{% block content_header %}
+            <h1>
+                个人信息
+                <small>后台</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> 后台</a></li>
+                <li class="active">跟人信息</li>
+            </ol>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-7 user-info">
+                <h1>个人信息</h1>
+                <div class="info-img">
+                    <input type="file" name="upimg">
+                    <img src="{{  users.face_image }}" alt="">
+                    <span>点击更换头像</span>
+                </div>
+                <div class="info-detail col-md-6">
+                    <p><span class="fa fa-user">姓名：</span><span>{{  users.username }}</span></p>
+                    <p><span class="fa fa-times">年龄：</span><span>{{ detail.user_age }}岁</span></p>
+                    <p><span class="fa fa-gear">职位：</span><span>{{ detail.user_pro }}</span></p>
+                    <p><span class="fa fa-yahoo famingyan">名言：</span><span id="input-change">{{ detail.user_mingyan }}</span><span class="change">更改</span></p>
+                </div>
+                <div class="col-md-10">
+                    <h3>个人简介：</h3>
+                </div>
+                <div class="info-text col-md-12">
+                    {{ detail.user_detail|safe }}
+
+                </div>
+
+                <div class="info-btn col-md-12">
+
+                    <button class="btn btn-primary pull-right btn-load">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block footer %}
+
+    <script src="{{ url_for('static',filename="dist/ueditor/ueditor.config.js") }}"></script>
+    <script src="{{ url_for('static',filename="dist/ueditor/ueditor.all.js") }}"></script>
+    <script src="{{ url_for('static',filename="dist/js/myself.min.js") }}"></script>
+{% endblock %}
