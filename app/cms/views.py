@@ -1,5 +1,5 @@
 from app.cms import cms
-from flask import render_template, abort, Response, flash, url_for, redirect, request, session, jsonify
+from flask import g, render_template, abort, Response, flash, url_for, redirect, request, session, jsonify
 from app.models import db, User, User_Detail, UserLog, CZ_JD_School, CZ_JD_Department
 from app.cms.froms import LoginFrom
 from flask_login import login_user, logout_user, login_required
@@ -7,21 +7,76 @@ from app import login_manager
 from app import app
 from flask_wtf import CSRFProtect
 import os
-from config import UEDITOR_CONFIG_PATH
+from config import UEDITOR_CONFIG_PATH, QINIU_ACCESSKEY, QINIU_SECRETKEY
 import json
 import re
+import flask_login
+from urllib import request as req
+from qiniu import Auth, put_file
+import time
+import hashlib
 
 csrf = CSRFProtect(app)
 
 
+def get_ip_address(ip):
+    with req.urlopen('http://ip.taobao.com/service/getIpInfo.php?ip=%s' % ip)as f:
+        data = f.read()
+    data = data.decode('utf-8')
+    data = eval(data)
+    address = '--IP地址:' + ip + ' --地址：' + data['data']['country'] + \
+              data['data']['region'] + '省 ' + data['data']['city'] + '市 -登录'
+    return address
+
+
+get_ip_address("110.84.0.129")
+
+
+@flask_login.user_logged_in.connect_via(app)
+def _track_logins(sender, user, **extra):
+    """
+    登录时接受信号
+    :param sender:
+    :param user:
+    :param extra:
+    :return:
+    """
+    ip = request.remote_addr
+    address = get_ip_address(ip)
+    user_log = UserLog(user_id=user.id, userlog_ip=address)
+    db.session.add(user_log)
+    db.session.commit()
+
+
+@flask_login.user_logged_out.connect_via(app)
+def _track_loginout(sender, user, **extra):
+    """
+    退出时接受信号
+    :param sender:
+    :param user:
+    :param extra:
+    :return:
+    """
+    print("退出登录！！")
+
+
 @login_manager.user_loader
 def loader_user(user_id):
+    """
+    user_loader 装饰器决定uer是否为登录状态
+    :param user_id:
+    :return:
+    """
     return User.query.get(int(user_id))
 
 
 @cms.route('/')
 @login_required
 def index():
+    """
+    后台首页返回数据
+    :return:
+    """
     if request.args.get('teacher'):
         cz = CZ_JD_Department.query.all()
         labels = []
@@ -57,27 +112,18 @@ def login():
         username = form.username.data
         password = form.password.data
         is_remember = form.is_remember.data
-        user = User.query.filter_by(phone=username, password=password).first()
+        user = User.query.filter_by(phone=username).first()
         next = request.args.get('next')
-        if user and is_remember:
+        if user and is_remember and user.check_password(password):
             login_user(user, remember=True)
+            print(1)
             flash("登陆成功")
-            ip = request.remote_addr
-            print(ip)
-            user_log = UserLog(user_id=session.get('user_id'), userlog_ip=ip)
-            db.session.add(user_log)
-            db.session.commit()
             return redirect(next or url_for('cms.index'))
-        elif user and is_remember == False:
+        elif user and is_remember == False and user.check_password(password):
             login_user(user)
+            print(2)
             flash("登陆成功")
-            ip = request.remote_addr
-            print(ip)
-            user_log = UserLog(user_id=session.get('user_id'), userlog_ip=ip)
-            db.session.add(user_log)
-            db.session.commit()
             return redirect(next or url_for('cms.index'))
-            flash("登陆成功")
         else:
             abort(400)
     else:
@@ -98,6 +144,10 @@ def login_out():
 @cms.route('/myself/')
 @login_required
 def myself():
+    """
+    自己的页面
+    :return:
+    """
     value = request.args.get('value')
     if value:
         detail = User_Detail.query.filter_by(user_id=session.get('user_id')).first()
@@ -108,9 +158,20 @@ def myself():
     return render_template('cms/common/myself.html')
 
 
+def get_md5_name():
+    md = hashlib.md5()
+    md.update(str(time.time()).encode())
+    name = md.hexdigest()
+    return name
+
+
 @cms.route('/upload_file/', methods=['POST'])
 @login_required
 def upload_file():
+    """
+    上传图片
+    :return:
+    """
     up_img = request.files.get('file')
     url = 'http://127.0.0.1:8081/static/dist/img/' + up_img.filename
     if up_img:
@@ -122,6 +183,32 @@ def upload_file():
     return jsonify({'data': {'url': url}})
 
 
+@cms.route('/upload_qiniu/', methods=['GET','POST'])
+@login_required
+def upload_qiniu():
+    up_img = request.files.get('file')
+    if up_img:
+        url = 'http://petjvu2oz.bkt.clouddn.com/'
+        houzui = up_img.filename.split('.')[-1]
+        filename = get_md5_name() + '.' + houzui
+        url = url+filename
+        q = Auth(access_key=QINIU_ACCESSKEY, secret_key=QINIU_SECRETKEY)
+        bucket_name = 'xxxfffzzz'
+        token = q.upload_token(bucket_name, filename, 3600)
+        return jsonify({'data': {'url': url, 'filename': filename, 'token': token}})
+
+    isave = request.args.get('is_save')
+    urls = request.args.get('url')
+    if isave and urls:
+        user = User.query.filter_by(id=session.get('user_id')).first()
+        user.face_image = urls
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'code':200})
+    return jsonify({'code':400})
+
+
+
 @cms.app_context_processor
 def user_face_img():
     user = User.query.filter_by(id=session.get('user_id')).first()
@@ -129,7 +216,7 @@ def user_face_img():
 
 
 @cms.app_context_processor
-def user_face_img():
+def user_face_imgs():
     detail = User_Detail.query.filter_by(user_id=session.get('user_id')).first()
     return dict(detail=detail)
 
@@ -245,14 +332,65 @@ def sch_detail():
     return jsonify({'code': 200})
 
 
+def get_dep(id):
+    if id:
+        return CZ_JD_Department.query.filter_by(id=int(id)).first()
+    else:
+        return None
+
+
 @cms.route('/dep_index/')
 @login_required
 def dep_index():
     dep_id = request.args.get('dep_id')
-    dep_detail  = None
+    dep_detail = None
     if dep_id:
-        dep_detail = CZ_JD_Department.query.filter_by(id=int(dep_id)).first()
+        dep_detail = get_dep(dep_id)
+    return render_template('cms/school/dep_index.html', dep_detail=dep_detail)
 
-    return render_template('cms/school/dep_index.html',dep_detail=dep_detail)
+
+@cms.route('/dep_detail/', methods=['POST'])
+@login_required
+def dep_detail():
+    dep_id = request.form.get('dep_id')
+    dep_name = request.form.get('dep_name')
+    dep_num = request.form.get('dep_num')
+    dep_level = request.form.get('dep_level')
+    dep_teacher_num = request.form.get('dep_teacher_num')
+    dep_student_num = request.form.get('dep_student_num')
+    dep_class_num = request.form.get('dep_class_num')
+    school_id = request.form.get('school_id')
+    dep_detail = get_dep(dep_id)
+    if dep_detail:
+        dep_detail.dep_name = dep_name
+        dep_detail.dep_num = dep_num
+        dep_detail.dep_level = dep_level
+        dep_detail.dep_teacher_num = dep_teacher_num
+        dep_detail.dep_student_num = dep_student_num
+        dep_detail.dep_class_num = dep_class_num
+        dep_detail.dep_shcs = int(school_id)
+    else:
+        dep_detail = CZ_JD_Department(dep_name=dep_name, dep_num=dep_num, dep_level=dep_level,
+                                      dep_teacher_num=dep_teacher_num,
+                                      dep_student_num=dep_student_num, dep_class_num=dep_class_num,
+                                      dep_shcs=int(school_id)
+                                      )
+    db.session.add(dep_detail)
+    db.session.commit()
+    return jsonify({'code': 200})
 
 
+@cms.route('/class/')
+@login_required
+def classes():
+    return render_template('cms/school/class_index.html')
+
+
+
+@cms.route('/test/')
+def test():
+    isave =  request.args.get('is_save')
+    if isave:
+        print("陈工")
+
+    return render_template("cms/school/test.html")

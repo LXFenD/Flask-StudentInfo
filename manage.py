@@ -32,7 +32,8 @@ def create_user():
     email = input('email:')
     phone = input('phone:')
     if password == password2 and re.match(r'[0-9a-zA-Z_]{0,19}@qq.com', email) and phone:
-        user = User(username=username, password=password, email=email, phone=phone)
+        user = User(username=username, email=email, phone=phone)
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
         print("注册成功！！！！")

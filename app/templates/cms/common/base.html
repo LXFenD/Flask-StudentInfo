@@ -9,6 +9,7 @@
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <link rel="stylesheet" href="{{ url_for('static',filename="dist/css/comm/base.css")}}">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/limonte-sweetalert2/7.21.1/sweetalert2.min.css">
     <!-- Bootstrap 3.3.7 -->
     <link rel="stylesheet"
           href="{{ url_for('static',filename="dist/adminlte/bower_components/bootstrap/dist/css/bootstrap.min.css") }}">
@@ -179,7 +180,7 @@
                     </a>
                     <ul class="treeview-menu">
                         <li><a href="{{ url_for('cms.dep_index') }}"><i class="fa fa-circle-o"></i> 系部管理</a></li>
-                        <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 班级管理</a></li>
+                        <li><a href="{{ url_for('cms.classes') }}"><i class="fa fa-circle-o"></i> 班级管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 专业的管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 教师管理</a></li>
                         <li><a href="javascript:void(0)"><i class="fa fa-circle-o"></i> 课程管理</a></li>
@@ -285,6 +286,8 @@
 <!-- AdminLTE App -->
 <script src="{{ url_for('static',filename="dist/adminlte/dist/js/adminlte.min.js") }}"></script>
 <script src="{{ url_for('static',filename="dist/adminlte/dist/js/demo.js") }}"></script>
+<script src="https://cdn.bootcss.com/limonte-sweetalert2/7.21.1/sweetalert2.all.js"></script>
+
 
 {% block footer %}
 

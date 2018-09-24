@@ -1,5 +1,6 @@
 
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash,check_password_hash
 from app import app
 from datetime import datetime
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:123456@127.0.0.1:3306/studentinfo"
@@ -187,15 +188,15 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(100))
-
     phone = db.Column(db.String(11), unique=True)
     email = db.Column(db.String(50), unique=True)
     face_image = db.Column(db.String(600))
     is_active = db.Column(db.Boolean, default=True)
     is_staff = db.Column(db.Boolean, default=False)
-    user_addtime = db.Column(db.DateTime, index=True, default=datetime.now())  #
+    user_addtime = db.Column(db.DateTime, index=True, default=datetime.utcnow())  #
     userlogs = db.relationship('UserLog', backref='user')  # 外键关联 登陆日志
     user_details = db.relationship('User_Detail', backref='user')  # 外键关联 登陆日志
+
     def is_authenticated(self):
         return True
 
@@ -207,6 +208,12 @@ class User(db.Model):
             return str(self.id)  # python 2
         except NameError:
             return str(self.id)  # python
+
+    def set_password(self,password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self,password):
+        return check_password_hash(self.password,password)
 
 
 class UserLog(db.Model):
