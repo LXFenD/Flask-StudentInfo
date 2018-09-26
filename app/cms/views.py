@@ -191,7 +191,7 @@ def upload_qiniu():
         url = 'http://petjvu2oz.bkt.clouddn.com/'
         houzui = up_img.filename.split('.')[-1]
         filename = get_md5_name() + '.' + houzui
-        url = url + filename
+        url = url+filename
         q = Auth(access_key=QINIU_ACCESSKEY, secret_key=QINIU_SECRETKEY)
         bucket_name = 'xxxfffzzz'
         token = q.upload_token(bucket_name, filename, 3600)
@@ -204,8 +204,9 @@ def upload_qiniu():
         user.face_image = urls
         db.session.add(user)
         db.session.commit()
-        return jsonify({'code': 200})
-    return jsonify({'code': 400})
+        return jsonify({'code':200})
+    return jsonify({'code':400})
+
 
 
 @cms.app_context_processor
@@ -382,13 +383,9 @@ def dep_detail():
 @cms.route('/class/')
 @login_required
 def classes():
-    return render_template('cms/school/class_index.html')
+    class_all =CZ_JD_Classinfo.query.all()
+    return render_template('cms/school/class_index.html',classes = class_all)
 
 
-@cms.route('/test/')
-def test():
-    isave = request.args.get('is_save')
-    if isave:
-        print("陈工")
 
-    return render_template("cms/school/test.html")
+

@@ -40,7 +40,10 @@
                                 <option value="0">
                                     全部
                                 </option>
-                                <option value="1">移动互联专业</option>
+                                {% for class in classes %}
+                                    <option value="{{ class.id }}">{{ class.cl_name }}</option>
+                                {% endfor %}
+
                             </select>
                         </div>
                         <div class="form-group col-md-3">
@@ -73,14 +76,17 @@
                         </thead>
                         <tbody>
                             <tr>
+                                {% for class in  classes%}
                                 <td></td>
-                                <td>1</td>
-                                <td>CZ0001</td>
-                                <td>移动互联1631</td>
-                                <td>移动互联应用技术</td>
-                                <td>胡建</td>
+                                <td>{{ class.id }}</td>
+                                <td>{{ class.cl_num }}</td>
+                                <td>{{ class.cl_name }}</td>
+                                <td>{{ class.cl_student_num }}</td>
+                                <td>{{ class.cl_pros }}</td>
                                 <td>23</td>
                                 <td><button class="btn btn-danger btn-xs">管理</button></td>
+                                {% endfor %}
+
                             </tr>
                         </tbody>
                     </table>
