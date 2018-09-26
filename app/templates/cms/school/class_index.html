@@ -20,7 +20,39 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-md-10">
+            <div class="classes_detail col-md-10">
+                <h4>录入班级信息:</h4>
+                <div class="left-info pull-left col-md-5">
+                    <p><label for="class_num">班级编号：<input type="text" id="class_num"></label></p>
+                    <p><label for="class_name">班级名称：<input type="text" id="class_name"></label></p>
+                    <p><label for="class_num">班级人数：<input type="text" id="class_studentnum"></label></p>
+                </div>
+                <div class="right-info pull-right col-md-5">
+                    <p><label >所属院系：<select name="select_dep" id="select_dep">
+                    <option value="0">所有</option>
+                        {% for dep in deps %}
+                            <option value="{{ dep.id }}">{{ dep.dep_name }}</option>
+                        {% endfor %}
+                    </select></label></p>
+                    <p><label for="class_num">所属专业： <select name="" id="pro_info">
+                        <option value="0">所有</option>
+                        {% for pro in pros %}
+                            <option value="{{ pro.id }}">{{ pro.pro_name }}</option>
+                        {% endfor %}
+                    </select></label></p>
+                    <p><label for="class_num">班主任姓名：<select name="" id="teach_info">
+                    <option value="0">所有</option>
+                        {% for tea in teas %}
+                            <option value="{{ tea.id }}">{{ tea.teach_name }}</option>
+                        {% endfor %}
+                    </select></label></p>
+                    <p>
+                        <button type="submit" class="btn btn-primary pull-right" id="class_num">保存</button>
+                    </p>
+
+                </div>
+            </div>
+            <div class="col-md-12">
                 <h4>查询：</h4>
                 <div class="class-top">
                     <form action="#" class="form-inline">
@@ -31,7 +63,6 @@
                                 {% for dep in deps %}
                                     <option value="{{ dep.id }}">{{ dep.dep_name }}</option>
                                 {% endfor %}
-
                             </select>
                         </div>
                         <div class="form-group col-md-3">
@@ -40,10 +71,9 @@
                                 <option value="0">
                                     全部
                                 </option>
-                                {% for class in classes %}
-                                    <option value="{{ class.id }}">{{ class.cl_name }}</option>
+                                {% for pro in pros %}
+                                    <option value="{{ pro.id }}">{{ pro.pro_name }}</option>
                                 {% endfor %}
-
                             </select>
                         </div>
                         <div class="form-group col-md-3">
@@ -52,13 +82,14 @@
                                 <option value="0">
                                     全部
                                 </option>
-                                <option value="1">移动互联专业</option>
+                                {% for tea in teas %}
+                                    <option value="{{ tea.id }}">{{ tea.teach_name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group col-md-3">
                             <button class="btn btn-primary btn-sm">查询</button>
                         </div>
-
                     </form>
                 </div>
                 <div class="class-table col-md-10" style="margin-top: 20px">
@@ -66,34 +97,42 @@
                         <thead>
                             <th>
                                 <td>ID</td>
-                                <td>编号</td>
-                                <td>名称</td>
-                                <td>专业</td>
-                                <td>老师</td>
-                                <td>人数</td>
+                                <td>班级编号</td>
+                                <td>班级名称</td>
+                                <td>隶属专业</td>
+                                <td>隶属院系专业</td>
+                                <td>班主任</td>
+                                <td>班级人数</td>
                                 <td>操作</td>
                             </th>
                         </thead>
                         <tbody>
-                            <tr>
-                                {% for class in  classes%}
-                                <td></td>
-                                <td>{{ class.id }}</td>
-                                <td>{{ class.cl_num }}</td>
-                                <td>{{ class.cl_name }}</td>
-                                <td>{{ class.cl_student_num }}</td>
-                                <td>{{ class.cl_pros }}</td>
-                                <td>23</td>
-                                <td><button class="btn btn-danger btn-xs">管理</button></td>
-                                {% endfor %}
+                            {% for class in  classes %}
+                                 <tr>
+                                    <td></td>
+                                    <td>{{ class.id }}</td>
+                                    <td>{{ class.cl_id }}</td>
+                                    <td>{{ class.cl_name }}</td>
+                                    <td>{{ class.cl_student_num }}</td>
+                                    <td>{{ class.cl_pros }}</td>
+                                    <td>23</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-xs">管理</button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <p>暂无数据</p>
+                            {% endfor %}
 
-                            </tr>
                         </tbody>
                     </table>
                 </div>
+
             </div>
-
-
         </div>
     </div>
+{% endblock %}
+
+{% block footer %}
+    <script src="{{ url_for('static',filename="dist/js/class_index.min.js") }}"></script>
 {% endblock %}

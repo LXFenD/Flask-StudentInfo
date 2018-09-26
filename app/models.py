@@ -1,8 +1,8 @@
-
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash,check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from app import app
 from datetime import datetime
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:123456@127.0.0.1:3306/studentinfo"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
@@ -49,6 +49,9 @@ class CZ_JD_Department(db.Model):
     dep_class_num = db.Column(db.BigInteger)  # 班级数量
     dep_shcs = db.Column(db.ForeignKey('cz_jd_school.id'))  # 所属学校
     dep_teachs = db.relationship('CZ_JD_Teacher', backref="cz_jd_department")
+    dep_pros = db.relationship('CZ_JD_Profess', backref='cz_jd_department')
+    dep_course = db.relationship('CZ_JD_Course', backref='cz_jd_department')
+    dep_class = db.relationship('CZ_JD_Classinfo', backref='cz_jd_department')
 
 
 """
@@ -67,17 +70,16 @@ class CZ_JD_Teacher(db.Model):
     __tablename__ = "cz_jd_teacher"
     id = db.Column(db.Integer, primary_key=True)  # id
     teach_name = db.Column(db.String(100), unique=True)  # 教师名称
-    teach_num = db.Column(db.String(100), unique=True)  # 班级编号
+    teach_id = db.Column(db.String(100), unique=True)  # 班级编号
     teach_age = db.Column(db.Integer)  # 教师年龄
     teach_zhicheng = db.Column(db.String(100))  # 教师职称
-    teach_id = db.Column(db.String(100), unique=True)  # 教师的编号
-    teach_deps = db.Column(db.ForeignKey('cz_jd_department.id'))  # 教师的职业技能
-    teach_face_img = db.Column(db.String(600), default=None)
-    teach_shenfen = db.Column(db.String(18), unique=True)
+    teach_banzhuren = db.Column(db.Boolean, default=False)  # 是否是班主任
+    teach_face_img = db.Column(db.String(600), default=None) #教师头像
     teach_record = db.Column(db.String(100))  # 教师的学历
-    teach_addschool_time = db.Column(db.DateTime, default=None)  # 当教师的时间
-    teach_profess = db.relationship('CZ_JD_Profess', backref='cz_jd_teacher')  # 教师的学历
-    classes = db.relationship('CZ_JD_Classinfo', secondary=classes, backref='cz_jd_teacher')  # 教师所教 的班级
+    teach_addschool_time = db.Column(db.DateTime, default=None)  # 进入学校的时间
+    teach_deps = db.Column(db.ForeignKey('cz_jd_department.id'))  # 教师的所属院系
+    teach_profess = db.relationship('CZ_JD_Profess', backref='cz_jd_teacher')
+    classes = db.relationship('CZ_JD_Classinfo', secondary=classes, backref='cz_jd_teacher')  # 教师所教的班级
     teach_cur = db.relationship('CZ_JD_Course', backref='cz_jd_teacher')  # 教师所教的课程
     userlogs = db.relationship('UserLog', backref='cz_jd_teacher')  # 外键关联 登陆日
 
@@ -94,6 +96,7 @@ class CZ_JD_Profess(db.Model):
     pro_studentnum = db.Column(db.Integer)  # 专业的学生人数
     pro_buildertime = db.Column(db.DateTime, default=None)  # 专业的建立时间
     pro_teachs = db.Column(db.ForeignKey('cz_jd_teacher.id'))  # 此专业的老师
+    pro_deps = db.Column(db.ForeignKey('cz_jd_department.id'))  # 此专业的院系
     pro_classinfos = db.relationship('CZ_JD_Classinfo', backref='cz_jd_profess')  # 此专业专业的班级
     pro_stu = db.relationship('CZ_JD_Student', backref='cz_jd_profess')  # 此专业的学生
 
@@ -106,11 +109,10 @@ class CZ_JD_Classinfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # id
     cl_id = db.Column(db.String(100), unique=True)  # 班级的编号
     cl_name = db.Column(db.String(100), unique=True)  # 班级的名称
-    cl_num = db.Column(db.String(100), unique=True)  # 班级编号
     cl_student_num = db.Column(db.Integer)  # 班级的学生人数
     cl_pros = db.Column(db.ForeignKey("cz_jd_profess.id"))  # 班级的专业
     cl_stu = db.relationship('CZ_JD_Student', backref='cz_jd_classinfo')
-
+    cl_deps = db.Column(db.ForeignKey('cz_jd_department.id'))
 
 """
 课程和学生的之间的多对多关系
@@ -132,6 +134,7 @@ class CZ_JD_Course(db.Model):
     cur_num = db.Column(db.String(100), unique=True)  # 课程编号
     cur_time = db.Column(db.Integer)  # 课程的必修课时
     cur_teach = db.Column(db.ForeignKey('cz_jd_teacher.id'))  # 课程的老师
+    cur_dep = db.Column(db.ForeignKey('cz_jd_department.id'))  # 课程的老师
     cur_addtime = db.Column(db.DateTime, index=True, default=datetime.utcnow)  # 课程的添加的时间
     courses = db.relationship('CZ_JD_Student', secondary='courses', backref='cz_jd_course')
 
@@ -145,8 +148,8 @@ class CZ_JD_Student(db.Model):
     stu_name = db.Column(db.String(100), unique=True)  # 学生的姓名
     stu_num = db.Column(db.String(100), unique=True)  # 学生编号
     stu_age = db.Column(db.Integer)  # 学生的年龄
-    stu_face_img = db.Column(db.String(600), default=None)
-    stu_shenfen = db.Column(db.String(18), unique=True)
+    stu_face_img = db.Column(db.String(600), default=None)  # 头像
+    stu_shenfen = db.Column(db.String(18), unique=True)  # 班级职务
     stu_pros = db.Column(db.ForeignKey('cz_jd_profess.id'))  # 学生的专业
     stu_classes = db.Column(db.ForeignKey('cz_jd_classinfo.id'))  # 学生的班级
     stu_open_time = db.Column(db.DateTime, index=True, default=datetime.utcnow)  # 学生的入学时间
@@ -209,11 +212,11 @@ class User(db.Model):
         except NameError:
             return str(self.id)  # python
 
-    def set_password(self,password):
+    def set_password(self, password):
         self.password = generate_password_hash(password)
 
-    def check_password(self,password):
-        return check_password_hash(self.password,password)
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 
 class UserLog(db.Model):
@@ -231,14 +234,15 @@ class UserLog(db.Model):
     def __str__(self):
         return '<UserLog %s>' % self.id
 
+
 class User_Detail(db.Model):
     """
     用户额外信息表
     """
     __tablename__ = 'user_detail'
-    id  = db.Column(db.Integer,primary_key=True)
-    user_id = db.Column(db.ForeignKey('user.id'),unique=True)
-    user_mingyan = db.Column(db.String(100),default=None)
-    user_detail = db.Column(db.Text,default=None)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey('user.id'), unique=True)
+    user_mingyan = db.Column(db.String(100), default=None)
+    user_detail = db.Column(db.Text, default=None)
     user_age = db.Column(db.Integer)
     user_pro = db.Column(db.Integer)
