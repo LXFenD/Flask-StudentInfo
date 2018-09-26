@@ -1,6 +1,6 @@
 from app.cms import cms
 from flask import g, render_template, abort, Response, flash, url_for, redirect, request, session, jsonify
-from app.models import db, User, User_Detail, UserLog, CZ_JD_School, CZ_JD_Department
+from app.models import db, User, User_Detail, UserLog, CZ_JD_School, CZ_JD_Department,CZ_JD_Classinfo
 from app.cms.froms import LoginFrom
 from flask_login import login_user, logout_user, login_required
 from app import login_manager
@@ -183,7 +183,7 @@ def upload_file():
     return jsonify({'data': {'url': url}})
 
 
-@cms.route('/upload_qiniu/', methods=['GET','POST'])
+@cms.route('/upload_qiniu/', methods=['GET', 'POST'])
 @login_required
 def upload_qiniu():
     up_img = request.files.get('file')
@@ -191,7 +191,7 @@ def upload_qiniu():
         url = 'http://petjvu2oz.bkt.clouddn.com/'
         houzui = up_img.filename.split('.')[-1]
         filename = get_md5_name() + '.' + houzui
-        url = url+filename
+        url = url + filename
         q = Auth(access_key=QINIU_ACCESSKEY, secret_key=QINIU_SECRETKEY)
         bucket_name = 'xxxfffzzz'
         token = q.upload_token(bucket_name, filename, 3600)
@@ -204,9 +204,8 @@ def upload_qiniu():
         user.face_image = urls
         db.session.add(user)
         db.session.commit()
-        return jsonify({'code':200})
-    return jsonify({'code':400})
-
+        return jsonify({'code': 200})
+    return jsonify({'code': 400})
 
 
 @cms.app_context_processor
@@ -383,14 +382,8 @@ def dep_detail():
 @cms.route('/class/')
 @login_required
 def classes():
-    return render_template('cms/school/class_index.html')
+    class_all =CZ_JD_Classinfo.query.all()
+    return render_template('cms/school/class_index.html',classes = class_all)
 
 
 
-@cms.route('/test/')
-def test():
-    isave =  request.args.get('is_save')
-    if isave:
-        print("陈工")
-
-    return render_template("cms/school/test.html")
