@@ -33,7 +33,7 @@ idna==2.7
 itsdangerous==0.24
 Jinja2==2.10
 kombu==4.2.1
-Mako==1.0.7
+Mako==1.2.2
 Markdown==3.0
 MarkupSafe==1.0
 marshmallow==2.15.6
